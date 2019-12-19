@@ -166,6 +166,19 @@ public class CompileMojo extends AbstractMojo implements GwtOptions {
   private String jvm;
 
   /**
+   * Skip checking dependencies for stale versions
+   */
+  @Parameter(property = "skipDependencyCheck", defaultValue="false")
+  private Boolean skipDependencyCheck;
+  
+  
+  /**
+   * Skip checking pom for stale versions
+   */
+  @Parameter(property = "skipPomCheck", defaultValue="false")
+  private Boolean skipPomCheck;
+  
+  /**
    * Requirements for this jdk toolchain, if {@link #jvm} is not set.
    * <p>This overrides the toolchain selected by the maven-toolchains-plugin.
    */
@@ -269,20 +282,33 @@ public class CompileMojo extends AbstractMojo implements GwtOptions {
     if (isStale(scanner, new File(project.getBuild().getOutputDirectory()), nocacheJs)) {
       return true;
     }
+    
+
     // POM
-    if (isStale(scanner, project.getFile(), nocacheJs)) {
-      return true;
-    }
-    // dependencies
-    ScopeArtifactFilter artifactFilter = new ScopeArtifactFilter(Artifact.SCOPE_COMPILE);
-    for (Artifact artifact : project.getArtifacts()) {
-      if (!artifactFilter.include(artifact)) {
-        continue;
-      }
-      if (isStale(scanner, artifact.getFile(), nocacheJs)) {
-        return true;
-      }
-    }
+	if(Boolean.FALSE.equals(skipPomCheck)) {
+	    File pom = project.getFile();
+		if (!pom.getName().equalsIgnoreCase("pom.xml")) {
+			pom = project.getFile().toPath().getParent().resolve("pom.xml").toFile();
+		}
+		if (pom.exists() && pom.isFile()) {
+			if (isStale(scanner, pom, nocacheJs)) {
+				return true;
+			}
+		}
+	}
+
+	if(Boolean.FALSE.equals(skipDependencyCheck)) {
+	    // dependencies
+	    ScopeArtifactFilter artifactFilter = new ScopeArtifactFilter(Artifact.SCOPE_COMPILE);
+	    for (Artifact artifact : project.getArtifacts()) {
+	      if (!artifactFilter.include(artifact)) {
+	        continue;
+	      }
+	      if (isStale(scanner, artifact.getFile(), nocacheJs)) {
+	        return true;
+	      }
+	    }
+	}
 
     return false;
   }
