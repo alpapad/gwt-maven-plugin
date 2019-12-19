@@ -3,7 +3,7 @@
 
   <groupId>net.ltgt.gwt.maven</groupId>
   <artifactId>gwt-maven-plugin</artifactId>
-  <version>HEAD-SNAPSHOT</version>
+  <version>1.0.1-STALE</version>
   <packaging>maven-plugin</packaging>
 
   <name>Maven Plugin for GWT</name>
